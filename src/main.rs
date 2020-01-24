@@ -1,92 +1,33 @@
-use std::fmt::{Display, Formatter, Error};
-use std::ops;
-
-
-#[derive(Copy, Clone)]
-struct XY { x: f32, y: f32 }
-
-
-impl Display for XY {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        write!(f, "({}, {})", self.x, self.y)
-    }
-}
-
-
-impl ops::Add for XY {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self {
-        Self { x: self.x + rhs.x, y: self.y + rhs.y }
-    }
-}
-
-
-impl ops::Sub for XY {
-    type Output = Self;
-
-    fn sub(self, rhs: Self) -> Self {
-        Self { x: self.x - rhs.x, y: self.y - rhs.y }
-    }
-}
-
-
-impl ops::Mul<f32> for XY {
-    type Output = Self;
-
-    fn mul(self, rhs: f32) -> Self {
-        Self { x: self.x * rhs, y: self.y * rhs }
-    }
-}
-
-
-impl ops::Mul<XY> for f32 {
-    type Output = XY;
-
-    fn mul(self, rhs: XY) -> XY { rhs * self }
-}
-
-
-impl ops::Div<f32> for XY {
-    type Output = Self;
-
-    fn div(self, rhs: f32) -> Self {
-        Self { x: self.x / rhs, y: self.y / rhs }
-    }
-}
-
-
-impl ops::Neg for XY {
-    type Output = Self;
-
-    fn neg(self) -> Self {
-        Self { x: -self.x, y: -self.y }
-    }
-}
-
-
-fn dot(a: XY, b: XY) -> f32 { a.x * b.x + a.y * b.y }
-
-
-fn cross(a: XY, b: XY) -> f32 { a.x * b.y - a.y * b.x }
-
-
-macro_rules! xy {
-    ($x:expr , $y:expr) => {XY { x: ($x) as f32, y: ($y) as f32 }};
-}
+use noise::{NoiseFn, Seedable};
+use rand::RngCore;
 
 
 fn main() {
-    let a = xy!(5, 5);
-    let b = xy!(3, 4);
-    println!("{}", a);
-    println!("{}", b);
-    println!("{}", a + b);
-    println!("{}", a - b);
-    println!("{}", a * 3.0);
-    println!("{}", 3.0 * b);
-    println!("{}", a / 3.0);
-    println!("{}", -b);
-    println!("{}", dot(a, b));
-    println!("{}", cross(a, b));
+    let make_noise = || { noise::OpenSimplex::new().set_seed(rand::thread_rng().next_u32()) };
+    let noises = [make_noise(), make_noise(),make_noise(), make_noise(),make_noise(), make_noise(),];
+
+    let f = |i| { i as f64 / 10.0 };
+    for y in (-40..=40).map(f).rev() {
+        for x in (-40..=40).map(f) {
+            let (mut max, mut sec, mut id) = (noises[0].get([x, y]), std::f64::NEG_INFINITY, 0);
+            for i in 1..noises.len() {
+                let val = noises[i].get([x, y]);
+                if val > max {
+                    id = i;
+                    sec = max;
+                    max = val;
+                } else if val > sec {
+                    sec = val;
+                }
+            }
+            let biome = if max > sec {
+                [':','-','|','+','X','@'][id]
+//                ['*','#'][id]
+            } else {
+                ' '
+            };
+            print!("{} ", biome);
+        }
+        println!();
+    }
 }
