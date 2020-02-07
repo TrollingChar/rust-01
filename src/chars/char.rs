@@ -1,71 +1,50 @@
-use sdl2::render::{WindowCanvas, Texture};
 use sdl2::rect::Rect;
+use sdl2::render::{Texture, WindowCanvas};
+
+use crate::chars::{Color, Glyph};
+use crate::r#const::*;
 
 
 #[derive(Copy, Clone)]
 pub struct Char {
-    code: Code,
+    glyph: Glyph,
+    color: Color,
+    background: Color,
 }
 
 
 impl Char {
-    pub fn new<T: Into<Code>>(code: T) -> Self {
-        Char { code: code.into() }
+    pub fn null() -> Self {
+        Self {
+            glyph: Glyph::Transparent,
+            color: Color::Transparent,
+            background: Color::Transparent,
+        }
     }
 
-    pub fn print(&mut self, c: Self) {
-        if c.code() != Code(0) { self.code = c.code; }
+    pub fn new(glyph: Glyph) -> Self {
+        Self { glyph, color: Color::Rgb(0xff, 0xff, 0xff), background: Color::Transparent }
     }
 
-    pub(super) fn render(self, canvas: &mut WindowCanvas, font: &mut Texture, x: usize, y: usize) {
-        font.set_color_mod(0x99, 0xff, 0x99);
-        let _result = canvas.copy(
+    pub fn with_color(glyph: Glyph, color: Color) -> Self {
+        Self { glyph, color, background: Color::Transparent }
+    }
+
+    pub fn with_colors(glyph: Glyph, color: Color, background: Color) -> Self {
+        Self { glyph, color, background }
+    }
+
+    pub fn render(self, x: u32, y: u32, canvas: &mut WindowCanvas, font: &mut Texture) {
+        self.color.affect_texture(font);
+        let _ = canvas.copy(
             font,
-            Rect::new((self.code.x() * 10) as i32, (self.code.y() * 10) as i32, 10, 10),
-            Rect::new((x * 20) as i32, (y * 20) as i32, 20, 20),
+            self.glyph.src_rect(),
+            Rect::new(
+                (x * CHAR_DISPLAYED_W) as i32,
+                (y * CHAR_DISPLAYED_H) as i32,
+                CHAR_DISPLAYED_W,
+                CHAR_DISPLAYED_H
+            ),
         );
     }
-
-    pub fn code(&self) -> Code {
-        self.code
-    }
-
-    pub fn set_code<T: Into<Code>>(&mut self, code: T) {
-        self.code = code.into();
-    }
-}
-
-
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
-pub struct Code(pub u8);
-
-
-impl Code {
-    pub(super) fn x(&self) -> u8 { self.0 & 0xf }
-    pub(super) fn y(&self) -> u8 { self.0 >> 4 }
-}
-
-
-impl From<char> for Code {
-    fn from(c: char) -> Self {
-        Self(c as u8)
-    }
-}
-
-
-impl From<u8> for Code {
-    fn from(n: u8) -> Self {
-        Self(n)
-    }
-}
-
-
-pub enum Color {
-    None,
-    Rgb { r: u8, g: u8, b: u8 },
-}
-
-
-impl Color {
-
 }

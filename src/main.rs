@@ -4,8 +4,10 @@ use sdl2::event::{Event, EventType};
 use sdl2::image::LoadTexture;
 
 use crate::game::Game;
+use crate::r#const::*;
 
 
+mod r#const;
 mod game;
 mod chars;
 
@@ -19,7 +21,11 @@ fn main() -> Result<(), String> {
     let timers = sdl.timer()?;
 
     let window = video.
-        window("Trollingchars 2020", 800, 600).
+        window(
+            "Trollingchars 2020",
+            GAME_W as u32 * CHAR_DISPLAYED_W,
+            GAME_H as u32 * CHAR_DISPLAYED_H
+        ).
         position_centered().
         build().
         expect("Could not make a window");
@@ -29,7 +35,7 @@ fn main() -> Result<(), String> {
         into_canvas().
         build().
         expect("Could not make a canvas");
-    canvas.set_draw_color((0x00, 0x33, 0x33));
+    canvas.set_draw_color((0, 0, 0));
 
     let texture_creator = canvas.texture_creator();
     let mut font_texture = texture_creator.load_texture("assets/chars.png")?;
@@ -50,7 +56,7 @@ fn main() -> Result<(), String> {
     }));
 
     for event in event_pump.wait_iter() {
-        println!("{:?}", &event);
+//        println!("{:?}", &event);
         game.on_event(&event);
         if game.over() { break; }
         if game.dirty() {
@@ -60,6 +66,3 @@ fn main() -> Result<(), String> {
 
     Ok(())
 }
-/*
-**  Что дальше: надо сделать игрока и чанки с генерацией их из шума (двухмерные)
-*/
