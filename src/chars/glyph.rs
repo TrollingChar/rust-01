@@ -1,5 +1,7 @@
 use sdl2::rect::Rect;
 
+use crate::r#const::*;
+
 
 #[derive(Copy, Clone)]
 pub enum Glyph {
@@ -11,8 +13,13 @@ pub enum Glyph {
 impl Glyph {
     pub fn src_rect(self) -> Rect {
         match self {
-            Glyph::Transparent => Rect::new(0, 0, 10, 10),
-            Glyph::Printable(i) => Rect::new((i as i32 & 0xf) * 10, (i as i32 >> 4) * 10, 10, 10),
+            Glyph::Transparent => Rect::new(0, 0, CHAR_STORED_W, CHAR_STORED_H),
+            Glyph::Printable(i) => Rect::new(
+                (i as i32 & 0xf) * CHAR_STORED_W as i32,
+                (i as i32 >> 4) * CHAR_STORED_H as i32,
+                CHAR_STORED_W,
+                CHAR_STORED_H
+            ),
         }
     }
 }

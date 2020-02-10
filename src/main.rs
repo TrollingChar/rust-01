@@ -35,7 +35,6 @@ fn main() -> Result<(), String> {
         into_canvas().
         build().
         expect("Could not make a canvas");
-    canvas.set_draw_color((0, 0, 0));
 
     let texture_creator = canvas.texture_creator();
     let mut font_texture = texture_creator.load_texture("assets/chars.png")?;

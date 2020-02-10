@@ -29,7 +29,12 @@ impl Chars2D {
     pub fn render(&self, canvas: &mut WindowCanvas, font: &mut Texture) {
         for x in 0..self.w {
             for y in 0..self.h {
-                self.char(x, y).render(x as u32, y as u32, canvas, font);
+                self.char(x, y).render_background(x as u32, y as u32, canvas);
+            }
+        }
+        for x in 0..self.w {
+            for y in 0..self.h {
+                self.char(x, y).render_glyph(x as u32, y as u32, canvas, font);
             }
         }
     }
